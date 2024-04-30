@@ -7,8 +7,9 @@ namespace UI
     {
         [SerializeField] private TMP_InputField XDimention;
         [SerializeField] private TMP_InputField YDimention;
+        [SerializeField] private TMP_InputField ColorsCount;
 
-        public void OnSetDeimentions()
+        public void OnReset()
         {
             
         }
