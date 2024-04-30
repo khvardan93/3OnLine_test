@@ -49,5 +49,10 @@ namespace Utils
             get => PlayerPrefs.GetInt(ColorCountKey, 2);
             set => PlayerPrefs.SetInt(ColorCountKey, value);
         }
+
+        public int GetBiggerDimension()
+        {
+            return XDimension > YDimension ? XDimension : YDimension;
+        }
     }
 }

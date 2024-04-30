@@ -2826,8 +2826,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c5660131afb624943a51dfe381b79179, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  XDimention: {fileID: 0}
-  YDimention: {fileID: 0}
+  XDimention: {fileID: 177198985}
+  YDimention: {fileID: 411021792}
+  ColorsCount: {fileID: 1298481073}
 --- !u!1 &1020997576
 GameObject:
   m_ObjectHideFlags: 0
@@ -2877,7 +2878,7 @@ GameObject:
   - component: {fileID: 1298481074}
   - component: {fileID: 1298481073}
   m_Layer: 5
-  m_Name: YDementionsInputField (1)
+  m_Name: ColorCountField
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -3454,7 +3455,7 @@ GameObject:
   - component: {fileID: 1681629226}
   - component: {fileID: 1681629225}
   m_Layer: 5
-  m_Name: SetButton
+  m_Name: ResetButton
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -3526,7 +3527,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 991245582}
         m_TargetAssemblyTypeName: UI.UIController, Assembly-CSharp
-        m_MethodName: OnSetDeimentions
+        m_MethodName: OnReset
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}

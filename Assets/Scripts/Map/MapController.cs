@@ -1,6 +1,9 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Tilemaps;
+using Utils;
+using Random = UnityEngine.Random;
 
 namespace Map
 {
@@ -8,21 +11,36 @@ namespace Map
     {
         [SerializeField] private Tilemap Tilemap;
 
-        private Vector2Int MapSize = new Vector2Int(14, 9);
+        private Vector2Int MapSize;
         private List<Color> Colors;
         private Tile[,] Tiles;
         public TileBase TileBase;
 
         private void Start()
         {
-            ClearMap();
-            PaintTile();
+            ResetMap();
+            EventUtil.Instance.OnResetMap += ResetMap;
+        }
+
+        private void OnDestroy()
+        {
+            EventUtil.Instance.OnResetMap -= ResetMap;
+        }
+
+        private void ResetMap()
+        {
+            var data = DataUtil.Instance;
             
-            Colors = GenerateDifferentColors(5);
+            MapSize = new Vector2Int(data.XDimension, data.YDimension);
+            
+            ClearMap();
+            PaintTiles();
+            
+            Colors = GenerateDifferentColors(data.ColorCount);
 
             ColorMap();
         }
-
+        
         private void ColorMap()
         {
             for (int y = 0; y < Tiles.GetLength(1); y++)
@@ -64,12 +82,12 @@ namespace Map
             return true;
         }
         
-        private void PaintTile()
+        private void PaintTiles()
         {
             int xStartPoint = -Mathf.CeilToInt(MapSize.x * 0.5f);
             int yStartPoint = -Mathf.CeilToInt(MapSize.y * 0.5f);
 
-            Tiles = new Tile[Tilemap.size.x, Tilemap.size.y];
+            Tiles = new Tile[MapSize.x, MapSize.y];
             
             for (int ySize = 0; ySize < MapSize.y; ySize++)
             {
