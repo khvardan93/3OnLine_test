@@ -30,6 +30,7 @@ namespace Utils
         public Action OnResetMap;
 
         public Action<Vector3Int, Vector3Int> OnReplaceTile;
+        public Action<Vector2Int, Vector2Int> OnReplaceTileSim;
 
         public Action<int> OnUpdateScore;
         

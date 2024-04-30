@@ -24,12 +24,14 @@ namespace Map
             ResetMap();
             EventUtil.Instance.OnResetMap += ResetMap;
             EventUtil.Instance.OnReplaceTile += ReplaceTiles;
+            EventUtil.Instance.OnReplaceTileSim += ReplaceTiles;
         }
 
         private void OnDestroy()
         {
             EventUtil.Instance.OnResetMap -= ResetMap;
             EventUtil.Instance.OnReplaceTile -= ReplaceTiles;
+            EventUtil.Instance.OnReplaceTileSim -= ReplaceTiles;
         }
 
         private bool TryGetTile(Vector2Int pos, out Tile tile)
@@ -223,24 +225,30 @@ namespace Map
         #endregion
         
         #region Replace and destroy
-        private void ReplaceTiles(Vector3Int pos1, Vector3Int pos2)
+        private void ReplaceTiles(Vector2Int pos1, Vector2Int pos2)
         {
-            StartCoroutine(ReplaceTilesCoroutine(pos1, pos2));
+            if(TryGetTile(pos1, out Tile tile1) && TryGetTile(pos2, out Tile tile2))
+                StartCoroutine(ReplaceTilesCoroutine(tile1, tile2));
         }
         
-        private IEnumerator ReplaceTilesCoroutine(Vector3Int pos1, Vector3Int pos2)
+        private void ReplaceTiles(Vector3Int pos1, Vector3Int pos2)
         {
             Tile tile1 = FindTileByPosition(pos1);
-            int color1 = tile1.ColorIndex;
-            
             Tile tile2 = FindTileByPosition(pos2);
+            
+            StartCoroutine(ReplaceTilesCoroutine(tile1, tile2));
+        }
+        
+        private IEnumerator ReplaceTilesCoroutine(Tile tile1, Tile tile2)
+        {
+            int color1 = tile1.ColorIndex;
             int color2 = tile2.ColorIndex;
 
             tile1.ColorIndex = color2;
-            SetTileColor(Colors[color2], pos1);
+            SetTileColor(Colors[color2], tile1.MapPosition);
 
             tile2.ColorIndex = color1;
-            SetTileColor(Colors[color1], pos2);
+            SetTileColor(Colors[color1], tile2.MapPosition);
 
             if (CheckTile(tile1) || CheckTile(tile2))
             {
@@ -253,10 +261,10 @@ namespace Map
                 yield return new WaitForSeconds(0.5f);
                 
                 tile1.ColorIndex = color1;
-                SetTileColor(Colors[color1], pos1);
+                SetTileColor(Colors[color1], tile1.MapPosition);
 
                 tile2.ColorIndex = color2;
-                SetTileColor(Colors[color2], pos2);
+                SetTileColor(Colors[color2], tile2.MapPosition);
             }
         }
 
@@ -376,8 +384,10 @@ namespace Map
         #region Init
         private void ResetMap()
         {
+            StopAllCoroutines();
             var data = DataUtil.Instance;
 
+            data.AreInputsLocked = false;
             data.Score = 0;
             MapSize = new Vector2Int(data.XDimension, data.YDimension);
             

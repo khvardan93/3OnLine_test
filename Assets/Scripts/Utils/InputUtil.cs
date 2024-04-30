@@ -23,7 +23,7 @@ namespace Utils
 
         private void Update()
         {
-            if(DataUtil.Instance.AreInputsLocked)
+            if(DataUtil.Instance.AreInputsLocked || DataUtil.Instance.SimulationStatus)
                 return;
             
             if (Input.GetMouseButtonDown(0))

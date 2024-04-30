@@ -1,4 +1,3 @@
-using System;
 using TMPro;
 using UnityEngine;
 using Utils;
@@ -54,10 +53,10 @@ namespace UI
 
             if (int.TryParse(XDimension.text, out int parsedValue))
             {
-                if (parsedValue < 5)
+                if (parsedValue < Configs.MinXDimension)
                 {
-                    XDimension.text = "5";
-                    parsedValue = 5;
+                    XDimension.text = Configs.MinXDimension.ToString();
+                    parsedValue = Configs.MinXDimension;
                 }
 
                 data.XDimension = parsedValue;
@@ -65,10 +64,10 @@ namespace UI
             
             if (int.TryParse(YDimension.text, out parsedValue))
             {
-                if (parsedValue < 5)
+                if (parsedValue < Configs.MinYDimension)
                 {
-                    YDimension.text = "5";
-                    parsedValue = 5;
+                    YDimension.text = Configs.MinYDimension.ToString();
+                    parsedValue = Configs.MinYDimension;
                 }
 
                 data.YDimension = parsedValue;
@@ -76,24 +75,27 @@ namespace UI
             
             if (int.TryParse(ColorsCount.text, out parsedValue))
             {
-                if (parsedValue < 2)
+                if (parsedValue < Configs.MinColorCount)
                 {
-                    ColorsCount.text = "2";
-                    parsedValue = 2;
+                    ColorsCount.text = Configs.MinColorCount.ToString();
+                    parsedValue = Configs.MinColorCount;
                 }
 
                 data.ColorCount = parsedValue;
             }
             
             EventUtil.Instance.OnResetMap?.Invoke();
+
+            if (DataUtil.Instance.SimulationStatus)
+                OnStopSimulation();
         }
 
         public void OnStartSimulation()
         {
             StartSimulationButton.SetActive(false);
             StopSimulationButton.SetActive(true);
-            
-            EventUtil.Instance.OnSimulationStatus?.Invoke(true);
+
+            DataUtil.Instance.SimulationStatus = true;
         }
         
         public void OnStopSimulation()
@@ -101,7 +103,8 @@ namespace UI
             StartSimulationButton.SetActive(true);
             StopSimulationButton.SetActive(false);
             
-            EventUtil.Instance.OnSimulationStatus?.Invoke(false);
+            DataUtil.Instance.SimulationStatus = false;
+            SimulationText.text = string.Empty;
         }
 
         public void OnClosePanel()

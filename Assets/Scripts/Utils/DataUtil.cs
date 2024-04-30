@@ -32,19 +32,19 @@ namespace Utils
 
         public int XDimension
         {
-            get => PlayerPrefs.GetInt(XDimensionKey, 5);
+            get => PlayerPrefs.GetInt(XDimensionKey, Configs.MinXDimension);
             set => PlayerPrefs.SetInt(XDimensionKey, value);
         }
         
         public int YDimension
         {
-            get => PlayerPrefs.GetInt(YDimensionKey, 5);
+            get => PlayerPrefs.GetInt(YDimensionKey, Configs.MinYDimension);
             set => PlayerPrefs.SetInt(YDimensionKey, value);
         }
         
         public int ColorCount
         {
-            get => PlayerPrefs.GetInt(ColorCountKey, 2);
+            get => PlayerPrefs.GetInt(ColorCountKey, Configs.MinColorCount);
             set => PlayerPrefs.SetInt(ColorCountKey, value);
         }
 
@@ -73,6 +73,17 @@ namespace Utils
                 EventUtil.Instance.OnUpdateScore?.Invoke(value);
             }
             get => ScoreCached;
+        }
+
+        private bool Simulation;
+        public bool SimulationStatus
+        {
+            set
+            {
+                Simulation = value;
+                EventUtil.Instance.OnSimulationStatus?.Invoke(value);
+            }
+            get => Simulation;
         }
     }
 }
