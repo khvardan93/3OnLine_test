@@ -1,9 +1,9 @@
-using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 using Utils;
 using Random = UnityEngine.Random;
+using System.Linq;
 
 namespace Map
 {
@@ -20,13 +20,44 @@ namespace Map
         {
             ResetMap();
             EventUtil.Instance.OnResetMap += ResetMap;
+            EventUtil.Instance.ReplaceTile += ReplaceTiles;
         }
 
         private void OnDestroy()
         {
             EventUtil.Instance.OnResetMap -= ResetMap;
+            EventUtil.Instance.ReplaceTile -= ReplaceTiles;
         }
 
+        private void ReplaceTiles(Vector3Int pos1, Vector3Int pos2)
+        {
+            Tile tile1 = FindTileByPosition(pos1);
+            int color1 = tile1.ColorIndex;
+            
+            Tile tile2 = FindTileByPosition(pos2);
+            int color2 = tile2.ColorIndex;
+
+            tile1.ColorIndex = color2;
+            SetTileColor(Colors[color2], pos1);
+
+            tile2.ColorIndex = color1;
+            SetTileColor(Colors[color1], pos2);
+        }
+        
+        private Tile FindTileByPosition(Vector3Int position)
+        {
+            Tile foundTile = Tiles.Cast<Tile>().FirstOrDefault(tile => tile.Position == position);
+
+            return foundTile;
+        }
+
+        private void SetTileColor(Color color, Vector3Int position)
+        {
+            Tilemap.SetTileFlags(position, TileFlags.None);
+            Tilemap.SetColor(position, color);
+        }
+        
+        #region Init
         private void ResetMap()
         {
             var data = DataUtil.Instance;
@@ -49,7 +80,7 @@ namespace Map
                 {
                     int colorIndex = GetColorOnInit(x, y);
                     Tiles[x, y].ColorIndex = colorIndex;
-                    SetTileColour(Colors[colorIndex], Tiles[x, y].Position);
+                    SetTileColor(Colors[colorIndex], Tiles[x, y].Position);
                 }
             }
         }
@@ -101,28 +132,18 @@ namespace Map
 
         private void ClearMap()
         {
-            // Get the bounds of the tilemap
             BoundsInt bounds = Tilemap.cellBounds;
 
-            // Loop through all positions within the bounds
             foreach (var position in bounds.allPositionsWithin)
             {
-                // Set the tile at each position to null
                 Tilemap.SetTile(position, null);
             }
-        }
-        
-        private void SetTileColour(Color color, Vector3Int position)
-        {
-            Tilemap.SetTileFlags(position, TileFlags.None);
-            Tilemap.SetColor(position, color);
         }
         
         private List<Color> GenerateDifferentColors(int n)
         {
             List<Color> colors = new List<Color>();
 
-            // Generate n evenly spaced hues
             for (int i = 0; i < n; i++)
             {
                 float hue = (float)i / n;
@@ -131,5 +152,6 @@ namespace Map
 
             return colors;
         }
+        #endregion
     }
 }

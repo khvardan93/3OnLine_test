@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using UnityEngine;
 
 namespace Utils
@@ -29,5 +28,7 @@ namespace Utils
         #endregion
 
         public Action OnResetMap;
+
+        public Action<Vector3Int, Vector3Int> ReplaceTile;
     }
 }
