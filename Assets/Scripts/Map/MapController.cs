@@ -119,6 +119,8 @@ namespace Map
                     }
                 }
             }
+
+            DataUtil.Instance.AreInputsLocked = false;
         }
 
         private int GetColorOnRefill(int xPos, int yPos)

@@ -23,6 +23,9 @@ namespace Utils
 
         private void Update()
         {
+            if(DataUtil.Instance.AreInputsLocked)
+                return;
+            
             if (Input.GetMouseButtonDown(0))
             {
                 OnButtonDown();

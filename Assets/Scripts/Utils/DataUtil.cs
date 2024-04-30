@@ -53,7 +53,16 @@ namespace Utils
             return XDimension > YDimension ? XDimension : YDimension;
         }
 
-        public bool AreInputsLocked;
+        private bool Lock;
+        public bool AreInputsLocked
+        {
+            set
+            {
+                Lock = value;
+                EventUtil.Instance.OnLockInputs?.Invoke(value);
+            }
+            get => Lock;
+        }
 
         private int ScoreCached;
         public int Score

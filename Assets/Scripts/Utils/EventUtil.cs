@@ -36,5 +36,7 @@ namespace Utils
         public Action<int> OnUpdateSimulationStep;
 
         public Action<bool> OnSimulationStatus;
+
+        public Action<bool> OnLockInputs;
     }
 }
