@@ -64,7 +64,7 @@ namespace Utils
                 if (Vector3Int.Distance(gridPosition, ClickedTile) == 1)
                 {
                     IsMouseDown = false;
-                    EventUtil.Instance.ReplaceTile(gridPosition, ClickedTile);
+                    EventUtil.Instance.OnReplaceTile(gridPosition, ClickedTile);
                 }
             }
         }

@@ -3246,7 +3246,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &982753149
 RectTransform:
   m_ObjectHideFlags: 0
@@ -3427,7 +3427,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c5660131afb624943a51dfe381b79179, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  OptionsPanel: {fileID: 0}
+  OptionsPanel: {fileID: 982753148}
   XDimension: {fileID: 177198985}
   YDimension: {fileID: 1580980575}
   ColorsCount: {fileID: 1115278586}
@@ -3833,7 +3833,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 'Start
+  m_text: 'Stop
 
     Simulation'
   m_isRightToLeft: 0

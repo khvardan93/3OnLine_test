@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Collections;
 using UnityEngine;
@@ -24,13 +23,13 @@ namespace Map
         {
             ResetMap();
             EventUtil.Instance.OnResetMap += ResetMap;
-            EventUtil.Instance.ReplaceTile += ReplaceTiles;
+            EventUtil.Instance.OnReplaceTile += ReplaceTiles;
         }
 
         private void OnDestroy()
         {
             EventUtil.Instance.OnResetMap -= ResetMap;
-            EventUtil.Instance.ReplaceTile -= ReplaceTiles;
+            EventUtil.Instance.OnReplaceTile -= ReplaceTiles;
         }
 
         private bool TryGetTile(Vector2Int pos, out Tile tile)
@@ -314,6 +313,7 @@ namespace Map
             foreach (var tile in finalTiles)
             {
                 SetTileColor(DisabledColor, tile.MapPosition);
+                DataUtil.Instance.Score++;
                 tile.IsActive = false;
             }
         }
@@ -375,7 +375,8 @@ namespace Map
         private void ResetMap()
         {
             var data = DataUtil.Instance;
-            
+
+            data.Score = 0;
             MapSize = new Vector2Int(data.XDimension, data.YDimension);
             
             ClearMap();

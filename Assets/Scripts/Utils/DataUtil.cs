@@ -54,5 +54,16 @@ namespace Utils
         }
 
         public bool AreInputsLocked;
+
+        private int ScoreCached;
+        public int Score
+        {
+            set
+            {
+                ScoreCached = value;
+                EventUtil.Instance.OnUpdateScore?.Invoke(value);
+            }
+            get => ScoreCached;
+        }
     }
 }

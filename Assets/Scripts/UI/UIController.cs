@@ -1,3 +1,4 @@
+using System;
 using TMPro;
 using UnityEngine;
 using Utils;
@@ -22,6 +23,15 @@ namespace UI
         private void Start()
         {
             SetFields();
+            
+            EventUtil.Instance.OnUpdateScore += OnUpdateScore;
+            EventUtil.Instance.OnUpdateSimulationStep += OnUpdateSimStep;
+        }
+
+        private void OnDestroy()
+        {
+            EventUtil.Instance.OnUpdateScore -= OnUpdateScore;
+            EventUtil.Instance.OnUpdateSimulationStep -= OnUpdateSimStep;
         }
 
         private void SetFields()
@@ -82,12 +92,16 @@ namespace UI
         {
             StartSimulationButton.SetActive(false);
             StopSimulationButton.SetActive(true);
+            
+            EventUtil.Instance.OnSimulationStatus?.Invoke(true);
         }
         
         public void OnStopSimulation()
         {
             StartSimulationButton.SetActive(true);
             StopSimulationButton.SetActive(false);
+            
+            EventUtil.Instance.OnSimulationStatus?.Invoke(false);
         }
 
         public void OnClosePanel()
@@ -98,6 +112,16 @@ namespace UI
         public void OnOpenPanel()
         {
             OptionsPanel.SetActive(true);
+        }
+
+        private void OnUpdateScore(int score)
+        {
+            ScoreText.text = $"Score: {score}";
+        }
+        
+        private void OnUpdateSimStep(int step)
+        {
+            SimulationText.text = $"Step: {step}";
         }
     }
 }
