@@ -6,9 +6,18 @@ namespace UI
 {
     public class UIController : MonoBehaviour
     {
+        [SerializeField] private GameObject OptionsPanel;
+        
         [SerializeField] private TMP_InputField XDimension;
         [SerializeField] private TMP_InputField YDimension;
         [SerializeField] private TMP_InputField ColorsCount;
+
+        [SerializeField] private GameObject StartSimulationButton;
+        [SerializeField] private GameObject StopSimulationButton;
+        
+        [Space] 
+        [SerializeField] private TMP_Text ScoreText;
+        [SerializeField] private TMP_Text SimulationText;
 
         private void Start()
         {
@@ -21,6 +30,12 @@ namespace UI
             XDimension.text = data.XDimension.ToString();
             YDimension.text = data.YDimension.ToString();
             ColorsCount.text = data.ColorCount.ToString();
+
+            ScoreText.text = string.Empty;
+            SimulationText.text = string.Empty;
+            
+            StartSimulationButton.SetActive(true);
+            StopSimulationButton.SetActive(false);
         }
 
         public void OnReset()
@@ -61,6 +76,28 @@ namespace UI
             }
             
             EventUtil.Instance.OnResetMap?.Invoke();
+        }
+
+        public void OnStartSimulation()
+        {
+            StartSimulationButton.SetActive(false);
+            StopSimulationButton.SetActive(true);
+        }
+        
+        public void OnStopSimulation()
+        {
+            StartSimulationButton.SetActive(true);
+            StopSimulationButton.SetActive(false);
+        }
+
+        public void OnClosePanel()
+        {
+            OptionsPanel.SetActive(false);
+        }
+        
+        public void OnOpenPanel()
+        {
+            OptionsPanel.SetActive(true);
         }
     }
 }

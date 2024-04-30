@@ -13,6 +13,7 @@ namespace Map
     {
         [SerializeField] private Tilemap Tilemap;
         [SerializeField] private TileBase TileBase;
+        [SerializeField] private Color DisabledColor;
         
         private Vector2Int MapSize;
         private List<Color> Colors;
@@ -34,13 +35,18 @@ namespace Map
 
         private bool TryGetTile(Vector2Int pos, out Tile tile)
         {
-            if (pos.x < 0 || pos.x >= Tiles.GetLength(0) || pos.y < 0 || pos.y >= Tiles.GetLength(1))
+            return TryGetTile(pos.x, pos.y, out tile);
+        }
+        
+        private bool TryGetTile(int x, int y, out Tile tile)
+        {
+            if (x < 0 || x >= Tiles.GetLength(0) || y < 0 || y >= Tiles.GetLength(1))
             {
                 tile = null;
                 return false;
             }
 
-            tile = Tiles[pos.x, pos.y];
+            tile = Tiles[x, y];
             return true;
         }
 
@@ -52,10 +58,10 @@ namespace Map
             {
                 if (TryGetTile(startTile, out Tile currentTile) && currentTile.IsActive)
                 {
+                    List<Tile> counter = new List<Tile>();
                     Vector2Int nextPos = startTile;
                     int currentColor = -1;
-                    List<Tile> counter = new List<Tile>();
-
+                    
                     do
                     {
                         if (currentColor == -1 || currentTile.ColorIndex == currentColor)
@@ -65,15 +71,17 @@ namespace Map
                         else
                         {
                             if (counter.Count >= 3)
-                            {
                                 foundMatches.AddRange(counter);
-                                counter.Clear();
-                                counter.Add(currentTile);
-                            }
+                            
+                            counter.Clear();
+                            counter.Add(currentTile);
                         }
-
+                        currentColor = currentTile.ColorIndex;
                         nextPos += step;
                     } while (TryGetTile(nextPos, out currentTile) && currentTile.IsActive);
+                    
+                    if(counter.Count >= 3)
+                        foundMatches.AddRange(counter);
                 }
             }
 
@@ -86,6 +94,71 @@ namespace Map
             {
                 checkRow(new Vector2Int(0, y), Vector2Int.right);
             }
+
+            if (foundMatches.Count >= 3)
+            {
+                DestroyTiles(foundMatches);
+                TileFalling();
+            }
+            else
+            {
+                RefillMap();
+            }
+        }
+
+        private void RefillMap()
+        {
+            for (int x = 0; x < Tiles.GetLength(0); x++)
+            {
+                for (int y = 0; y < Tiles.GetLength(1); y++)
+                {
+                    if (TryGetTile(x, y, out Tile tile) && !tile.IsActive)
+                    {
+                        tile.ColorIndex = GetColorOnRefill(x, y);
+                        SetTileColor(Colors[tile.ColorIndex], tile.MapPosition);
+                        tile.IsActive = true;
+                    }
+                }
+            }
+        }
+
+        private int GetColorOnRefill(int xPos, int yPos)
+        {
+            int newColor = Random.Range(0, Colors.Count);
+
+            if (CheckColorForRefill(newColor, xPos, yPos))
+                return newColor;
+
+            return GetColorOnRefill(xPos, yPos);
+        }
+        
+        private bool CheckColorForRefill(int colorIndex, int xPos, int yPos)
+        {
+            if (xPos <= 1 && yPos <= 1)
+                return true;
+
+            bool checkColor(Tile cTile)
+            {
+                return cTile.IsActive && cTile.ColorIndex == colorIndex;
+            }
+
+            if (TryGetTile(xPos - 1, yPos, out Tile testTile) && checkColor(testTile) &&
+                TryGetTile(xPos + 1, yPos, out testTile) && checkColor(testTile))
+                return false;
+            
+            if (TryGetTile(xPos - 1, yPos, out testTile) && checkColor(testTile) &&
+                TryGetTile(xPos - 2, yPos, out testTile) && checkColor(testTile))
+                return false;
+            
+            if (TryGetTile(xPos + 1, yPos, out testTile) && checkColor(testTile) &&
+                TryGetTile(xPos + 2, yPos, out testTile) && checkColor(testTile))
+                return false;
+            
+            if (TryGetTile(xPos, yPos - 1, out testTile) && checkColor(testTile) &&
+                TryGetTile(xPos, yPos - 2, out testTile) && checkColor(testTile))
+                return false;
+
+            return true;
         }
 
         #region Tile Fall
@@ -101,7 +174,7 @@ namespace Map
         private IEnumerator TileFallingColumn(int x)
         {
             int tileCount;
-            var waitABit = new WaitForSeconds(0.02f);
+            var waitABit = new WaitForSeconds(0.01f);
             
             yield return new WaitForSeconds(0.2f);;
             
@@ -139,7 +212,7 @@ namespace Map
             int color1 = upTile.ColorIndex;
 
             upTile.ColorIndex = -1;
-            SetTileColor(Color.black, upTile.MapPosition);
+            SetTileColor(DisabledColor, upTile.MapPosition);
             upTile.IsActive = false;
 
             tile.ColorIndex = color1;
@@ -240,7 +313,7 @@ namespace Map
         {
             foreach (var tile in finalTiles)
             {
-                SetTileColor(Color.black, tile.MapPosition);
+                SetTileColor(DisabledColor, tile.MapPosition);
                 tile.IsActive = false;
             }
         }
@@ -250,6 +323,11 @@ namespace Map
             Tile foundTile = Tiles.Cast<Tile>().FirstOrDefault(tile => tile.MapPosition == position);
 
             return foundTile;
+        }
+
+        private void SetTileColor(Color color, int x, int y)
+        {
+            SetTileColor(color, new Vector3Int(x, y, 0));
         }
 
         private void SetTileColor(Color color, Vector3Int position)
@@ -315,8 +393,12 @@ namespace Map
                 for (int x = 0; x < Tiles.GetLength(0); x++)
                 {
                     int colorIndex = GetColorOnInit(x, y);
-                    Tiles[x, y].ColorIndex = colorIndex;
-                    SetTileColor(Colors[colorIndex], Tiles[x, y].MapPosition);
+                    
+                    Tile tile = Tiles[x, y];
+                    
+                    tile.ColorIndex = colorIndex;
+                    SetTileColor(Colors[colorIndex], tile.MapPosition);
+                    tile.IsActive = true;
                 }
             }
         }
