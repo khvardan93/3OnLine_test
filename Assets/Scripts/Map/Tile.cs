@@ -4,12 +4,18 @@ namespace Map
 {
     public class Tile
     {
-        public Tile(int xPos, int yPos)
+        public Tile(Vector3Int mapPos, Vector2Int arrayPos)
         {
-            Position = new Vector3Int(xPos, yPos, 0);
+            MapPosition = mapPos;
+            ArrayPosition = arrayPos;
+
+            IsActive = true;
         }
         
-        public Vector3Int Position;
+        public Vector3Int MapPosition;
+        public Vector2Int ArrayPosition;
         public int ColorIndex;
+
+        public bool IsActive;
     }
 }

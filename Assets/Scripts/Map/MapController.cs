@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Generic;
+using System.Collections;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 using Utils;
@@ -10,12 +12,13 @@ namespace Map
     public class MapController : MonoBehaviour
     {
         [SerializeField] private Tilemap Tilemap;
-
+        [SerializeField] private TileBase TileBase;
+        
         private Vector2Int MapSize;
         private List<Color> Colors;
         private Tile[,] Tiles;
-        public TileBase TileBase;
-
+        private int FallCounter;
+        
         private void Start()
         {
             ResetMap();
@@ -29,7 +32,129 @@ namespace Map
             EventUtil.Instance.ReplaceTile -= ReplaceTiles;
         }
 
+        private bool TryGetTile(Vector2Int pos, out Tile tile)
+        {
+            if (pos.x < 0 || pos.x >= Tiles.GetLength(0) || pos.y < 0 || pos.y >= Tiles.GetLength(1))
+            {
+                tile = null;
+                return false;
+            }
+
+            tile = Tiles[pos.x, pos.y];
+            return true;
+        }
+
+        private void CheckTheMap()
+        {
+            List<Tile> foundMatches = new List<Tile>();
+
+            void checkRow(Vector2Int startTile, Vector2Int step)
+            {
+                if (TryGetTile(startTile, out Tile currentTile) && currentTile.IsActive)
+                {
+                    Vector2Int nextPos = startTile;
+                    int currentColor = -1;
+                    List<Tile> counter = new List<Tile>();
+
+                    do
+                    {
+                        if (currentColor == -1 || currentTile.ColorIndex == currentColor)
+                        {
+                            counter.Add(currentTile);
+                        }
+                        else
+                        {
+                            if (counter.Count >= 3)
+                            {
+                                foundMatches.AddRange(counter);
+                                counter.Clear();
+                                counter.Add(currentTile);
+                            }
+                        }
+
+                        nextPos += step;
+                    } while (TryGetTile(nextPos, out currentTile) && currentTile.IsActive);
+                }
+            }
+
+            for (int x = 0; x < Tiles.GetLength(0); x++)
+            {
+                checkRow(new Vector2Int(x, 0), Vector2Int.up);
+            }
+            
+            for (int y = 0; y < Tiles.GetLength(1); y++)
+            {
+                checkRow(new Vector2Int(0, y), Vector2Int.right);
+            }
+        }
+
+        #region Tile Fall
+        private void TileFalling()
+        {
+            FallCounter = 0;
+            for (int x = 0; x < Tiles.GetLength(0); x++)
+            {
+                StartCoroutine(TileFallingColumn(x));
+            }
+        }
+
+        private IEnumerator TileFallingColumn(int x)
+        {
+            int tileCount;
+            var waitABit = new WaitForSeconds(0.02f);
+            
+            yield return new WaitForSeconds(0.2f);;
+            
+            do
+            {
+                tileCount = 0;
+                for (int y = Tiles.GetLength(1) - 2; y >= 0; y--)
+                {
+                    if (!Tiles[x, y].IsActive && Tiles[x, y + 1].IsActive)
+                    {
+                        MoveDestroyedTile(Tiles[x, y]);
+                        tileCount++;
+
+                        yield return waitABit;
+                    }
+                }
+            } while (tileCount > 0 );
+
+            OnFallDone();
+        }
+
+        private void OnFallDone()
+        {
+            FallCounter++;
+
+            if (FallCounter == Tiles.GetLength(0))
+            {
+                CheckTheMap();
+            }
+        }
+
+        private void MoveDestroyedTile(Tile tile)
+        {
+            Tile upTile = Tiles[tile.ArrayPosition.x, tile.ArrayPosition.y + 1];
+            int color1 = upTile.ColorIndex;
+
+            upTile.ColorIndex = -1;
+            SetTileColor(Color.black, upTile.MapPosition);
+            upTile.IsActive = false;
+
+            tile.ColorIndex = color1;
+            SetTileColor(Colors[color1], tile.MapPosition);
+            tile.IsActive = true;
+        }
+        #endregion
+        
+        #region Replace and destroy
         private void ReplaceTiles(Vector3Int pos1, Vector3Int pos2)
+        {
+            StartCoroutine(ReplaceTilesCoroutine(pos1, pos2));
+        }
+        
+        private IEnumerator ReplaceTilesCoroutine(Vector3Int pos1, Vector3Int pos2)
         {
             Tile tile1 = FindTileByPosition(pos1);
             int color1 = tile1.ColorIndex;
@@ -42,11 +167,87 @@ namespace Map
 
             tile2.ColorIndex = color1;
             SetTileColor(Colors[color1], pos2);
+
+            if (CheckTile(tile1) || CheckTile(tile2))
+            {
+                DataUtil.Instance.AreInputsLocked = true;
+                CheckCross(tile1);
+                CheckCross(tile2);
+            }
+            else
+            {
+                yield return new WaitForSeconds(0.5f);
+                
+                tile1.ColorIndex = color1;
+                SetTileColor(Colors[color1], pos1);
+
+                tile2.ColorIndex = color2;
+                SetTileColor(Colors[color2], pos2);
+            }
         }
-        
+
+        private void CheckCross(Tile tile)
+        {
+            void checkDirection(Vector2Int pos, Vector2Int dir, List<Tile> foundTiles)
+            {
+                Vector2Int newPos = pos + dir;
+
+                if (newPos.x < 0 || newPos.x >= Tiles.GetLength(0) || newPos.y < 0 || newPos.y >= Tiles.GetLength(1))
+                    return;
+
+                if (Tiles[pos.x, pos.y].ColorIndex == Tiles[newPos.x, newPos.y].ColorIndex)
+                {
+                    foundTiles.Add(Tiles[newPos.x, newPos.y]);
+                    checkDirection(newPos, dir, foundTiles);
+                }
+            }
+
+            List<Tile> rightTiles = new List<Tile>();
+            checkDirection(tile.ArrayPosition, Vector2Int.right, rightTiles);
+            
+            List<Tile> leftTiles = new List<Tile>();
+            checkDirection(tile.ArrayPosition, Vector2Int.left, leftTiles);
+            
+            List<Tile> upTiles = new List<Tile>();
+            checkDirection(tile.ArrayPosition, Vector2Int.up, upTiles);
+            
+            List<Tile> downTiles = new List<Tile>();
+            checkDirection(tile.ArrayPosition, Vector2Int.down, downTiles);
+            
+            List<Tile> finalTiles = new List<Tile>();
+            finalTiles.Add(tile);
+
+            if (rightTiles.Count + leftTiles.Count + 1 >= 3)
+            {
+                finalTiles.AddRange(rightTiles);
+                finalTiles.AddRange(leftTiles);
+            }
+            
+            if (upTiles.Count + downTiles.Count + 1 >= 3)
+            {
+                finalTiles.AddRange(upTiles);
+                finalTiles.AddRange(downTiles);
+            }
+
+            if (finalTiles.Count >= 3)
+            {
+                DestroyTiles(finalTiles);
+                TileFalling();
+            }
+        }
+
+        private void DestroyTiles(List<Tile> finalTiles)
+        {
+            foreach (var tile in finalTiles)
+            {
+                SetTileColor(Color.black, tile.MapPosition);
+                tile.IsActive = false;
+            }
+        }
+
         private Tile FindTileByPosition(Vector3Int position)
         {
-            Tile foundTile = Tiles.Cast<Tile>().FirstOrDefault(tile => tile.Position == position);
+            Tile foundTile = Tiles.Cast<Tile>().FirstOrDefault(tile => tile.MapPosition == position);
 
             return foundTile;
         }
@@ -56,6 +257,41 @@ namespace Map
             Tilemap.SetTileFlags(position, TileFlags.None);
             Tilemap.SetColor(position, color);
         }
+
+        private bool CheckTile(Tile tile)
+        {
+            bool compareColor(Vector2Int step)
+            {
+                int x = tile.ArrayPosition.x + step.x;
+                int y = tile.ArrayPosition.y + step.y;
+
+                if (x < 0 || x >= Tiles.GetLength(0) || y < 0 || y >= Tiles.GetLength(1))
+                    return false;
+                
+                return tile.ColorIndex == Tiles[x, y].ColorIndex;
+            }
+            
+            if(compareColor(new Vector2Int(-1, 0)) && compareColor(new Vector2Int(1, 0)))
+                return true;
+
+            if(compareColor(new Vector2Int(-1, 0)) && compareColor(new Vector2Int(-2, 0)))
+                return true;
+            
+            if(compareColor(new Vector2Int(1, 0)) && compareColor(new Vector2Int(2, 0)))
+                return true;
+            
+            if(compareColor(new Vector2Int(0, -1)) && compareColor(new Vector2Int(0, 1)))
+                return true;
+            
+            if(compareColor(new Vector2Int(0, -1)) && compareColor(new Vector2Int(0, -2)))
+                return true;
+            
+            if(compareColor(new Vector2Int(0, 1)) && compareColor(new Vector2Int(0, 2)))
+                return true;
+
+            return false;
+        }
+        #endregion
         
         #region Init
         private void ResetMap()
@@ -80,7 +316,7 @@ namespace Map
                 {
                     int colorIndex = GetColorOnInit(x, y);
                     Tiles[x, y].ColorIndex = colorIndex;
-                    SetTileColor(Colors[colorIndex], Tiles[x, y].Position);
+                    SetTileColor(Colors[colorIndex], Tiles[x, y].MapPosition);
                 }
             }
         }
@@ -124,8 +360,9 @@ namespace Map
             {
                 for (int xSize = 0; xSize < MapSize.x; xSize++)
                 {
-                    Tilemap.SetTile(new Vector3Int(xStartPoint + xSize, yStartPoint + ySize, 0), TileBase);
-                    Tiles[xSize, ySize] = new Tile(xStartPoint + xSize, yStartPoint + ySize);
+                    Vector3Int pos = new Vector3Int(xStartPoint + xSize, yStartPoint + ySize, 0);
+                    Tilemap.SetTile(pos, TileBase);
+                    Tiles[xSize, ySize] = new Tile(pos, new Vector2Int(xSize, ySize));
                 }
             }
         }

@@ -52,5 +52,7 @@ namespace Utils
         {
             return XDimension > YDimension ? XDimension : YDimension;
         }
+
+        public bool AreInputsLocked;
     }
 }
