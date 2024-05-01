@@ -2,11 +2,13 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using UnityEngine.Tilemaps;
 using Utils;
 
 namespace Map
 {
+    /// <summary>
+    /// This part contains the logic to control what happens when the player(or simulator) does a move
+    /// </summary>
     public partial class MapController
     {
         private void ReplaceTiles(Vector2Int pos1, Vector2Int pos2)
@@ -126,10 +128,10 @@ namespace Map
                 int x = tile.ArrayPosition.x + step.x;
                 int y = tile.ArrayPosition.y + step.y;
 
-                if (x < 0 || x >= Tiles.GetLength(0) || y < 0 || y >= Tiles.GetLength(1))
+                if (!TryGetTile(x, y, out Tile nTile))
                     return false;
                 
-                return tile.ColorIndex == Tiles[x, y].ColorIndex;
+                return tile.ColorIndex == nTile.ColorIndex;
             }
             
             if(compareColor(new Vector2Int(-1, 0)) && compareColor(new Vector2Int(1, 0)))

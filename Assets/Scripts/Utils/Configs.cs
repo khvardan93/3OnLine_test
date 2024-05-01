@@ -1,5 +1,8 @@
 namespace Utils
 {
+    /// <summary>
+    /// Game configs
+    /// </summary>
     public static class Configs
     {
         public const int MinXDimension = 5;

@@ -3,6 +3,9 @@ using UnityEngine;
 
 namespace Utils
 {
+    /// <summary>
+    /// Controls gameplay events, organizes the communication between different modules
+    /// </summary>
     public class EventUtil
     {
         #region Singleton

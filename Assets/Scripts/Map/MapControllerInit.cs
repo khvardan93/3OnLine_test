@@ -4,6 +4,9 @@ using Utils;
 
 namespace Map
 {
+    /// <summary>
+    /// This part contains the logic to start a new session and fill the map first time
+    /// </summary>
     public partial class MapController
     {
         private void ResetMap()

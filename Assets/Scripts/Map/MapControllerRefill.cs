@@ -1,10 +1,11 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using Utils;
 
 namespace Map
 {
+    /// <summary>
+    /// This part contains the logic to refill the map after all matches are destroyed
+    /// </summary>
     public partial class MapController
     {
         private void RefillMap()

@@ -5,6 +5,9 @@ using Utils;
 
 namespace Map
 {
+    /// <summary>
+    /// The class controls the game map
+    /// </summary>
     public partial class MapController : MonoBehaviour
     {
         [SerializeField] private Tilemap Tilemap;

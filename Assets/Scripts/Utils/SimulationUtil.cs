@@ -4,6 +4,9 @@ using Random = UnityEngine.Random;
 
 namespace Utils
 {
+    /// <summary>
+    /// The calss contains the logic which simulate a players oves
+    /// </summary>
     public class SimulationUtil : MonoBehaviour
     {
         private const int StepCount = 1000000;

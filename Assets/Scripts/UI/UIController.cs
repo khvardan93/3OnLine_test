@@ -4,6 +4,9 @@ using Utils;
 
 namespace UI
 {
+    /// <summary>
+    /// Controls the UI
+    /// </summary>
     public class UIController : MonoBehaviour
     {
         [SerializeField] private GameObject OptionsPanel;

@@ -2,6 +2,9 @@ using UnityEngine;
 
 namespace Utils
 {
+    /// <summary>
+    /// Contains the gameplay data
+    /// </summary>
     public class DataUtil
     {
         #region Singleton

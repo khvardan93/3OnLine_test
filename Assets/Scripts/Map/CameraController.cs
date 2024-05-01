@@ -3,6 +3,9 @@ using Utils;
 
 namespace Map
 {
+    /// <summary>
+    /// Controls the camera
+    /// </summary>
     [RequireComponent(typeof(Camera))]
     public class CameraController : MonoBehaviour
     {

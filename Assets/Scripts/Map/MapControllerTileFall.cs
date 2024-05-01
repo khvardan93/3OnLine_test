@@ -4,6 +4,9 @@ using UnityEngine;
 
 namespace Map
 {
+    /// <summary>
+    /// This part contains the logic to control the process of falling the tiles which have destroyed tiles under them
+    /// </summary>
     public partial class MapController
     {
         private void TileFalling()

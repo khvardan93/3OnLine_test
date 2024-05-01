@@ -3,6 +3,9 @@ using UnityEngine.Tilemaps;
 
 namespace Utils
 {
+    /// <summary>
+    /// The class contains the logic the get inputs from the player
+    /// </summary>
     [RequireComponent(typeof(Tilemap))]
     public class InputUtil : MonoBehaviour
     {
