@@ -26,14 +26,14 @@ namespace Map
             DataUtil.Instance.AreInputsLocked = false;
         }
 
-        private int GetColorOnRefill(int xPos, int yPos)
+        private int GetColorOnRefill(int xPos, int yPos, int depth = 15)
         {
             int newColor = Random.Range(0, Colors.Count);
 
-            if (CheckColorForRefill(newColor, xPos, yPos))
+            if (CheckColorForRefill(newColor, xPos, yPos) || depth == 0)
                 return newColor;
 
-            return GetColorOnRefill(xPos, yPos);
+            return GetColorOnRefill(xPos, yPos, depth - 1);
         }
         
         private bool CheckColorForRefill(int colorIndex, int xPos, int yPos)
